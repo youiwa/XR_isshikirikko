@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Box-AR_youiwaken</title>
+    <meta name="description" content="Box-AR_youiwaken" />
+    <script src="./lib/aframe.min.js"></script>
+
+    <script>
+      AFRAME.registerComponent("ar-hit-test", {
+        init: function () {
+          // session start
+          this.el.sceneEl.renderer.xr.addEventListener(
+            "sessionstart",
+            async () => {
+              if (this.el.sceneEl.is("ar-mode")) {
+                this.renderer = this.el.sceneEl.renderer;
+                let session = this.renderer.xr.getSession();
+                let viewerSpace = await session.requestReferenceSpace("viewer");
+                this.xrHitTestSource = await session.requestHitTestSource({
+                  space: viewerSpace,
+                });
+              }
+            }
+          );
+
+          // session end
+          this.el.sceneEl.renderer.xr.addEventListener(
+            "sessionend",
+            async () => {
+              this.xrHitTestSource = null;
+            }
+          );
+        },
+        tick: function () {
+          const frame = this.el.sceneEl.frame;
+          if (!frame) return;
+
+          // hit-test in real world
+          const xrHitTestSource = this.xrHitTestSource;
+          if (xrHitTestSource) {
+            const refSpace = this.renderer.xr.getReferenceSpace();
+            const hitTestResults = frame.getHitTestResults(xrHitTestSource);
+            if (hitTestResults.length > 0) {
+              const pose = hitTestResults[0].getPose(refSpace);
+              this.el.setAttribute("position", pose.transform.position);
+              this.el.object3D.quaternion.copy(pose.transform.orientation);
+            }
+          }
+        },
+      });
+    </script>
+  </head>
+  <body>
+    <a-scene
+      webxr="optionalFeatures: hit-test, dom-overlay; overlayElement:#overlay;"
+    >
+      <a-assets>
+        <!-- OBJ形式のCGモデルの読み込み -->
+        <a-asset-item id="obj" src="../model_kosen/Kochiyan.obj"></a-asset-item>
+        <a-asset-item id="mtl" src="../model_kosen/Kochiyan.mtl"></a-asset-item>
+        <a-asset-item id="obj2" src="../model_plane/Y-wing.obj"></a-asset-item>
+        <a-asset-item id="mtl2" src="../model/Y-wing.mtl"></a-asset-item>
+      </a-assets>
+      <a-entity light="type: point; color: #fff;" position="0 7 0"></a-entity>
+      <a-entity id="hitTestMarker" ar-hit-test>
+        <!-- <a-circle scale="0.1 0.1 0.1" rotation="-90 0 0"></a-circle> -->
+        <a-ring
+          material="opacity: 0.5"
+          color="red"
+          radius-inner="1.5"
+          radius-outer="2"
+          scale="0.1 0.1 0.1"
+          rotation="-90 0 0"
+        ></a-ring>
+      </a-entity>
+      <a-entity
+        id="objmodel"
+        obj-model="obj: #obj; mtl: #mtl"
+        scale="0.005 0.005 0.005"
+        rotation="0 -90 0"
+      ></a-entity>
+      <a-entity
+        id="objmodel2"
+        obj-model="obj: #obj2; mtl: #mtl2"
+        scale="0.007 0.007 0.007"
+      ></a-entity>
+    </a-scene>
+
+    <div id="overlay">
+      <input
+        id="button"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 20px;
+          left: 20px;
+          width: 100px;
+          height: 50px;
+          z-index: 100;
+        "
+        value="figure1"
+      />
+      <input
+        id="button2"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 20px;
+          left: 130px;
+          width: 100px;
+          height: 50px;
+          z-index: 100;
+        "
+        value="figure2"
+      />
+    </div>
+
+    <script>
+      var scene = document.querySelector("a-scene");
+      var hitTest = document.querySelector("#hitTestMarker");
+      var button = document.querySelector("#button");
+      var model = document.querySelector("#objmodel");
+      var model2 = document.querySelector("#objmodel2");
+
+      button.addEventListener("click", function () {
+        // 立方体設置
+        //let box = document.createElement("a-box");
+        //box.setAttribute("color", "cyan");
+        //box.setAttribute(
+        //  "position",
+        //  new THREE.Vector3(0, 0.05, 0).add(hitTest.object3D.position)
+        //);
+        //box.setAttribute("rotation", hitTest.getAttribute("rotation"));
+        //box.setAttribute("scale", "0.1 0.1 0.1");
+        //scene.appendChild(box);
+
+        //モデルの位置変更
+        model.setAttribute(
+          "position",
+          new THREE.Vector3(0, 0.05, 0.05).add(hitTest.object3D.position)
+        );
+        //model.setAttribute("rotation",
+        //  new THREE.Vector3(0, -90, 0).add(hitTest.object3D.rotation)
+        //);
+      });
+      button2.addEventListener("click", function () {
+        //モデル2の位置変更
+        model2.setAttribute(
+          "position",
+          new THREE.Vector3(0, 0.05, 0.05).add(hitTest.object3D.position)
+        );
+
+        //model2.setAttribute("rotation",
+        //  new THREE.Vector3(0, -90, 0).add(hitTest.object3D.rotation)
+        //);
+      });
+    </script>
+  </body>
+</html>

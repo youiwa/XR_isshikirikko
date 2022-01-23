@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Plane-VR_youiwaken</title>
+    <meta name="description" content="Asyura - A-Frame" />
+    <!-- A-Frame ライブラリの読み込み -->
+    <script src="./lib/aframe.min.js"></script>
+    <script src="./lib/aframe-extras.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <a-plane
+        position="0 0 -4"
+        rotation="-90 0 0"
+        width="4"
+        height="4"
+        color="#7BC8A4"
+      ></a-plane>
+      <!-- asset for model file -->
+      <a-assets>
+        <!-- OBJ形式のCGモデルの読み込み -->
+        <a-asset-item id="obj" src="../model_plane/Y-wing.obj"></a-asset-item>
+        <a-asset-item id="mtl" src="../model_plane/Y-wing.mtl"></a-asset-item>
+      </a-assets>
+
+      <!-- Using the asset management system. -->
+      <a-entity camera look-controls position="0 1.6 -1"></a-entity>
+      <a-entity
+        obj-model="obj: #obj; mtl: #mtl"
+        scale="0.05 0.05 0.05"
+        position="0 1 -4"
+        rotation="0 -25 0"
+        animation="property: rotation; from: 0 0 0; to: 0 -360 0; dur: 20000; easing: linear; loop: true"
+      ></a-entity>
+
+      <a-sky src="../model/bg.png"></a-sky>
+    </a-scene>
+  </body>
+</html>
