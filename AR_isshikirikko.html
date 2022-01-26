@@ -76,9 +76,10 @@
       <a-entity
         id="objmodel"
         obj-model="obj: #obj; mtl: #mtl"
-        scale="0.0005 0.0005 0.0005"
         rotation="0 -90 0"
+        scale="0 0 0"
       ></a-entity>
+      <!-- scale="0.0005 0.0005 0.0005" -->
     </a-scene>
 
     <div id="overlay">
@@ -95,6 +96,32 @@
         "
         value="モデルを設置"
       />
+      <input
+        id="button_scale_down"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 20px;
+          left: 130px;
+          width: 80px;
+          height: 50px;
+          z-index: 100;
+        "
+        value="Size Down"
+      />
+      <input
+        id="button_scale_up"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 75px;
+          left: 130px;
+          width: 80px;
+          height: 50px;
+          z-index: 100;
+        "
+        value="Size Up"
+      />
     </div>
 
     <script>
@@ -102,27 +129,46 @@
       var hitTest = document.querySelector("#hitTestMarker");
       var button = document.querySelector("#button");
       var model = document.querySelector("#objmodel");
+      const defaultSize = new THREE.Vector3(0.0005, 0.0005, 0.0005);
+      const changeSize = new THREE.Vector3(0.00003, 0.00003, 0.00003);
 
       button.addEventListener("click", function () {
-        // 立方体設置
-        //let box = document.createElement("a-box");
-        //box.setAttribute("color", "cyan");
-        //box.setAttribute(
-        //  "position",
-        //  new THREE.Vector3(0, 0.05, 0).add(hitTest.object3D.position)
-        //);
-        //box.setAttribute("rotation", hitTest.getAttribute("rotation"));
-        //box.setAttribute("scale", "0.1 0.1 0.1");
-        //scene.appendChild(box);
-
         //モデルの位置変更
         model.setAttribute(
           "position",
           new THREE.Vector3(0, 0.05, 0.05).add(hitTest.object3D.position)
         );
+        model.setAttribute("rotation", hitTest.getAttribute("rotation"));
+        //大きさリセット
+        model.setAttribute("scale", defaultSize);
         //model.setAttribute("rotation",
         //  new THREE.Vector3(0, -90, 0).add(hitTest.object3D.rotation)
         //);
+      });
+      button_scale_up.addEventListener("click", function () {
+        //モデルの大きさ変更
+        var scaleSize = model.getAttribute("scale");
+        scaleSize.x = scaleSize.x + changeSize.x;
+        scaleSize.y = scaleSize.y + changeSize.y;
+        scaleSize.z = scaleSize.z + changeSize.z;
+        model.setAttribute(
+          "scale",
+          new THREE.Vector3(scaleSize.x, scaleSize.y, scaleSize.z)
+        );
+        //alert(scaleSize.x);
+      });
+
+      button_scale_down.addEventListener("click", function () {
+        //モデルの大きさ変更
+        var scaleSize = model.getAttribute("scale");
+        scaleSize.x = scaleSize.x - changeSize.x;
+        scaleSize.y = scaleSize.y - changeSize.y;
+        scaleSize.z = scaleSize.z - changeSize.z;
+        model.setAttribute(
+          "scale",
+          new THREE.Vector3(scaleSize.x, scaleSize.y, scaleSize.z)
+        );
+        //alert(scaleSize.x);
       });
     </script>
   </body>
