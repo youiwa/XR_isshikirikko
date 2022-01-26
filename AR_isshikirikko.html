@@ -53,15 +53,21 @@
     </script>
   </head>
   <body>
+    <a-assets>
+      <!-- OBJ形式のCGモデルの読み込み -->
+      <a-asset-item id="obj" src="./model/3133.obj"></a-asset-item>
+      <a-asset-item id="mtl" src="./model/3133.mtl"></a-asset-item>
+    </a-assets>
     <a-scene
       webxr="optionalFeatures: hit-test, dom-overlay; overlayElement:#overlay;"
     >
-      <a-assets>
-        <!-- OBJ形式のCGモデルの読み込み -->
-        <a-asset-item id="obj" src="./model/3133.obj"></a-asset-item>
-        <a-asset-item id="mtl" src="./model/3133.mtl"></a-asset-item>
-      </a-assets>
       <a-entity light="type: point; color: #fff;" position="0 7 0"></a-entity>
+      <a-entity
+        id="light2"
+        light="type: point; color: #fff; intensity 0.5;"
+        position="0 0.3 0"
+        scale="0.5 0.5 0.5"
+      ></a-entity>
       <a-entity id="hitTestMarker" ar-hit-test>
         <!-- <a-circle scale="0.1 0.1 0.1" rotation="-90 0 0"></a-circle> -->
         <a-ring
