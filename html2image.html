@@ -1,0 +1,235 @@
+<![CDATA[
+/** htmnl2image.html
+ *  HTML表示を画像保存する
+ *
+ * @copyright	(c)studio pahoo
+ * @author		パパぱふぅ
+ * @動作環境	JavaScript ES6(ES2015)
+ * @参考URL		https://www.pahoo.org/e-soul/webtech/js01/js01-14-01.shtm
+*/
+]]>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title></title>
+<meta name="author" content="studio pahoo" />
+<meta name="copyright" content="studio pahoo" />
+<meta name="ROBOTS" content="NOINDEX,NOFOLLOW" />
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=550,user-scalable=yes" />
+
+<!-- 外部ライブラリ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sprintf/1.1.2/sprintf.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+
+<script>
+//初期値
+const TITLE = 'HTML表示を画像保存';		//プログラム・タイトル
+const WIDTH_TABLE = 300;				//一覧表の横幅（ピクセル）
+const WIDTH_HELP  = 500;				//ヘルプの横幅（ピクセル）
+const PERIOD = 5;						//計算範囲（年）
+const FNAME_SAVE = 'canvas';			//保存する画像ファイル名
+
+//初期設定
+$(function() {
+	var today = new Date();
+	const DEF_YEAR = today.getFullYear();		//西暦年（デフォルト値）
+	const MIN_YEAR = DEF_YEAR - 20;				//　　　（最小値）
+	const MAX_YEAR = DEF_YEAR + 20;				//　　　（最大値）
+
+	//画面の初期設定
+	var refere = 'https://www.pahoo.org/e-soul/webtech/js01/js01-14-01.shtm';
+	$('title').html(TITLE);
+	$('#title').html(TITLE + '  <span style="font-size:small;">jQuery版 ' + getLastModified() + '版</span>');
+	$('#phelp').css('width', WIDTH_HELP + 'px');
+	$('#refere').html('参考サイト：<a href="' + refere +'">' + refere + '</a>');
+	$('#plist').css('width', WIDTH_TABLE + 'px');
+
+	//Spinner設定
+	$('#year').spinner({
+		min: MIN_YEAR,
+		max: MAX_YEAR,
+		step: 1,
+		change: function(event, ui) {
+			putCursedDays();
+		}
+	});
+	$('#year').val(DEF_YEAR);
+
+	//初回実行
+	putCursedDays();
+
+	//HTML画像化イベント登録
+	$('#exec').on('click', function() {
+		html2image('#plist', '#image');
+	});
+
+});
+
+/**
+ * ファイル更新日を返す
+ * @param	なし
+ * @return	String yyyy/mm/dd
+*/
+function getLastModified() {
+	var now = new Date(document.lastModified);
+	return now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate();
+}
+
+/**
+ * 指定した年月からが指定した期間にある13日の金曜日を返す
+ * @param	int year, int month 調査開始年月
+ * @param	int period          調査期間（年）
+ * @param	array items         13日の金曜日を格納する配列
+ * @return	bool true：13日の金曜日／false：それ以外
+*/
+function getCursedDays(year, month, period, items) {
+	var dt, dw;
+	var ss;
+	var cnt = 0;
+	var finish = Number(year) + Number(period);
+	while (year < finish) {
+		ss = sprintf('%04d/%02d/%02d', year, month, 13);
+		dt = new Date(ss);
+		dw = dt.getDay();
+		//金曜日
+		if (dw == 5) {
+			items[cnt] = new Object();
+			items[cnt].year = year;
+			items[cnt].mmdd = sprintf('%02d月%02d日(金)', month, 13);
+			cnt++;
+		}
+		month++;
+		if (month > 12) {
+			month = 1;
+			year++;
+		}
+	}
+}
+
+/**
+ * 一覧表を作成
+ * @param	array items 13日の金曜日を格納した配列
+ * @return	string HTML文
+*/
+function makeTable(items) {
+	var html = `
+`;
+	var cnt = 1;
+	var old = 0;
+	items.forEach(function(e) {
+		//西暦年
+		if (e.year != old) {
+		html += `
+<tr>
+<td class="year" colspan="2">${e.year}年</td>
+</tr>
+`;
+		}
+		html += `
+<tr>
+<td class="index">${cnt}</td>
+<td class="mmdd">${e.mmdd}</td>
+</tr>
+`;
+		cnt++;
+		old = e.year;
+	});
+
+	return html;
+}
+
+/**
+ * 一覧表を作成し、ページ上に表示
+ * @param	なし
+ * @return	なし
+*/
+function putCursedDays() {
+	items = new Array();
+	var year = $('#year').val();
+	getCursedDays(year, 1, PERIOD, items);
+	table = makeTable(items);
+	$('#plist').html(table);
+}
+
+/**
+ * 一覧表を画像化する
+ * @param	string html  画像化するオブジェクト
+ * @return	なし
+*/
+function html2image(html) {
+	var capture = document.querySelector(html);
+	html2canvas(capture, {useCORS: true}).then(canvas => {
+		var base64 = canvas.toDataURL('image/png');
+//		$('#image').attr("src", base64);		//画面に画像表示
+		$('#download').attr('href', base64);
+		$('#download').attr('download', FNAME_SAVE);
+		$('#download')[0].click();				//自動ダウンロード
+	});
+}
+
+</script>
+
+<!-- スタイルシート -->
+<style>
+table {
+	border-collapse: collapse;
+	margin-top:    20px;
+	margin-bottom:  0px;
+}
+tr, td, th {
+	border: 1px gray solid;
+	padding: 4px;
+}
+.year {
+	background-color: gainsboro;
+}
+.index {
+	text-align: center;
+}
+.mmdd {
+	text-align: center;
+}
+</style>
+</head>
+
+<!-- ページ本文 -->
+<body>
+<h2 id="title" name="title"></h2>
+<!-- 入力フォーム -->
+開始年 <input name="year" id="year" type="text" size="3" value="" />　
+<input type="button" id="exec" name="exec" value="画像保存" />
+
+<!-- 一覧表 -->
+<table id="plist" name="plist"></table>
+
+<!-- 画像変換 -->
+<img id="image" name="image" src="" />
+<a id="download" href="#" download=""></a>
+
+<!-- 使い方 -->
+<div id="phelp" name="phelp" style="border-style:solid; border-width:1px; margin:20px 0px 0px 0px; padding:5px; font-size:small; overflow-wrap:break-word; word-break:break-all;">
+<h3>使い方</h3>
+<ol>
+<li>［<span style="font-weight:bold;">開始年</span>］を選択してください．</li>
+<li>一覧表をクリックしてください．</li>
+<li>13日の金曜日を列挙します．</li>
+<li><span style="font-weight:bold;">画像保存</span>］ボタンをクリックすると，ファイル保存ダイアログを表示し，一覧表を画像として保存できます．</li>
+</ol>
+<div id="refere" name="refer"></div>
+
+</body>
+</html>
+
+<![CDATA[
+/*
+** バージョンアップ履歴 ===================================================
+ *
+ * @version 1.0  2021/06/12
+]]>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>A-FrameとAR.js - スナップショットを撮る</title>
+    <!-- ① A-Frame を読み込む -->
+    <script src="./lib/aframe.min.js"></script>
+    <!-- ② AR.js を読み込む -->
+    <script src="./lib/aframe-ar.js"></script>
+    <link
+      href="//fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <style>
+      .ui {
+        position: absolute;
+        z-index: 100;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 10px 15px 30px;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      .ui a {
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+        background-color: #ffffff;
+        line-height: 100%;
+        color: #303030;
+        margin: 10px 3px;
+        border-radius: 50%;
+        position: relative;
+      }
+      .ui a i {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      .ui a:active {
+        color: #ff0000;
+      }
+
+      #snap {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        visibility: hidden;
+      }
+      .ui a.disabled {
+        pointer-events: none;
+        color: #cccccc;
+      }
+      #snap.visible {
+        visibility: visible;
+      }
+    </style>
+  </head>
+
+  <body style="margin: 0; overflow: hidden">
+    <!-- ③ シーンを追加 -->
+    <a-scene
+      embedded
+      arjs="debugUIEnabled:false;trackingMethod: best;"
+      vr-mode-ui="enabled: false"
+    >
+      <a-marker preset="hiro">
+        <a-box position="0 0.5 0" wireframe="true"></a-box>
+      </a-marker>
+
+      <!-- ⑥ カメラを追加 -->
+      <a-entity camera></a-entity>
+    </a-scene>
+    <div class="ui">
+      <img id="snap" />
+      <a href="#" id="delete-photo" title="Delete Photo" class="disabled"
+        ><i class="material-icons">delete</i></a
+      >
+      <a href="" id="take-photo" title="Take Photo"
+        ><i class="material-icons">photo_camera</i></a
+      >
+      <a
+        href="#"
+        id="download-photo"
+        download="selfie.png"
+        title="Save Photo"
+        class="disabled"
+        target="_blank"
+        ><i class="material-icons">file_download</i></a
+      >
+    </div>
+  </body>
+  <script>
+    var image = document.querySelector("#snap");
+    var take_photo_btn = document.querySelector("#take-photo");
+    var delete_photo_btn = document.querySelector("#delete-photo");
+    var download_photo_btn = document.querySelector("#download-photo");
+
+    //スナップショットボタン
+    take_photo_btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      var video = document.querySelector("video");
+      var snap = takeSnapshot(video);
+
+      //スナップショット表示.
+      image.setAttribute("src", snap);
+      image.classList.add("visible");
+
+      // 削除ボタンと保存ボタン有効
+      delete_photo_btn.classList.remove("disabled");
+      download_photo_btn.classList.remove("disabled");
+
+      // 保存ボタンにスナップショットを渡す
+      download_photo_btn.href = snap;
+    });
+
+    //削除ボタン
+    delete_photo_btn.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      // スナップショットを隠す
+      image.setAttribute("src", "");
+      image.classList.remove("visible");
+
+      // 削除ボタンと保存ボタン無効
+      delete_photo_btn.classList.add("disabled");
+      download_photo_btn.classList.add("disabled");
+    });
+
+    //スナップショットを撮る
+    function takeSnapshot(video) {
+      var resizedCanvas = document.createElement("canvas");
+      var resizedContext = resizedCanvas.getContext("2d");
+      var width = video.videoWidth;
+      var height = video.videoHeight;
+      var aScene = document
+        .querySelector("a-scene")
+        .components.screenshot.getCanvas("perspective");
+
+      if (width && height) {
+        //videoのサイズをキャンバスにセット
+        resizedCanvas.width = width;
+        resizedCanvas.height = height;
+        //キャンバスにvideoをコピー
+        resizedContext.drawImage(video, 0, 0, width, height);
+
+        //カメラの画角でar側の縮小処理を変える
+        if (width > height) {
+          // 横長（PC)
+          resizedContext.drawImage(aScene, 0, 0, width, height);
+        } else {
+          // 縦長（スマホ）
+          var scale = height / width;
+          var scaledWidth = height * scale;
+          var marginLeft = (width - scaledWidth) / 2;
+          resizedContext.drawImage(aScene, marginLeft, 0, scaledWidth, height);
+        }
+        return resizedCanvas.toDataURL("image/png");
+      }
+    }
+
+    //-->
+  </script>
+</html>

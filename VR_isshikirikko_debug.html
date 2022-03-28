@@ -12,46 +12,21 @@
     <script src="https://raw.githubusercontent.com/n5ro/aframe-extras/master/dist/aframe-extras.min.js"></script> -->
   </head>
   <body>
-    <!-- asset for model file -->
-    <a-assets>
-      <!-- OBJ形式のCGモデルの読み込み -->
-      <a-asset-item id="obj" src="./model/3133.obj"></a-asset-item>
-      <a-asset-item id="mtl" src="./model/3133.mtl"></a-asset-item>
-    </a-assets>
-
     <a-scene>
-      <!-- Default lighting injected by A-Frame. -->
-      <!-- <a-entity light="type: ambient; color: #BBB"></a-entity>
-      <a-entity
-        light="type: directional; color: #FFF; intensity: 0.6"
-        position="-0.5 1 1"
-      ></a-entity> -->
+      <!-- asset for model file -->
+      <a-assets>
+        <!-- OBJ形式のCGモデルの読み込み -->
+        <a-asset-item id="obj" src="./model/3133.obj"></a-asset-item>
+        <a-asset-item id="mtl" src="./model/3133.mtl"></a-asset-item>
+      </a-assets>
+
       <a-entity id="amb_light" light="type: ambient; color: #AAA"></a-entity>
       <a-entity
         id="flat_light"
         light="type: directional; color: #FFF; intensity: 0.6; castShadow: true;"
         position="5 5 5"
       ></a-entity>
-      <!-- <a-entity camera look-controls position="0 1.6 -1"></a-entity> -->
-      <a-camera position="0 1 4">
-        <!-- <a-entity
-          id="cursor"
-          cursor="fuse: true; fuseTimeout: 1000"
-          position="0 0 -1"
-          geometry="primitive: ring"
-          scale="0.03 0.03 0.03"
-          material="color: blue; shader: flat"
-        >
-          <a-animation
-            begin="cursor-fusing"
-            easing="ease-in"
-            attribute="scale"
-            fill="none"
-            from="0.03 0.03 0.03"
-            to="0.001 0.001 0.001"
-          ></a-animation>
-        </a-entity> -->
-      </a-camera>
+      <a-camera position="0 1 4"> </a-camera>
 
       <a-entity
         id="objmodel"
@@ -75,7 +50,21 @@
 
       <a-sky src="./model/bg-sky.jpg"></a-sky>
     </a-scene>
+    <img id="snap" />
     <div id="overlay">
+      <input
+        id="button_save"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 75px;
+          left: 20px;
+          width: 100px;
+          height: 50px;
+          z-index: 100;
+        "
+        value="保存"
+      />
       <input
         id="button"
         type="button"
@@ -116,6 +105,9 @@
         value="モデルを小さく"
       />
     </div>
+    <a href="" id="plotter-img" download="html2canvas.png">ダウンロード</a>
+    <!--ダウンロードリンクを設定するaタグ-->
+    <!--download属性の値は ダウンロードしたときのファイル名になります-->
     <script>
       var scene = document.querySelector("a-scene");
       var model = document.querySelector("#objmodel");
@@ -151,6 +143,56 @@
           new THREE.Vector3(scaleSize.x, scaleSize.y, scaleSize.z)
         );
         //alert(scaleSize.x);
+      });
+
+      var image = document.querySelector("#snap");
+      var take_photo_btn = document.querySelector("#take-photo");
+
+      function takeSnapshot(video) {
+        var resizedCanvas = document.createElement("canvas");
+        var resizedContext = resizedCanvas.getContext("2d");
+        var width = video.videoWidth;
+        var height = video.videoHeight;
+        var aScene = document
+          .querySelector("a-scene")
+          .components.screenshot.getCanvas("perspective");
+
+        if (width && height) {
+          //videoのサイズをキャンバスにセット
+          resizedCanvas.width = width;
+          resizedCanvas.height = height;
+          //キャンバスにvideoをコピー
+          resizedContext.drawImage(video, 0, 0, width, height);
+
+          //カメラの画角でar側の縮小処理を変える
+          if (width > height) {
+            // 横長（PC)
+            resizedContext.drawImage(aScene, 0, 0, width, height);
+          } else {
+            // 縦長（スマホ）
+            var scale = height / width;
+            var scaledWidth = height * scale;
+            var marginLeft = (width - scaledWidth) / 2;
+            resizedContext.drawImage(
+              aScene,
+              marginLeft,
+              0,
+              scaledWidth,
+              height
+            );
+          }
+          return resizedCanvas.toDataURL("image/png");
+        }
+      }
+
+      //スナップショットボタン
+      button_save.addEventListener("click", function (e) {
+        e.preventDefault();
+        var video = document.querySelector("canvas");
+        var snap = takeSnapshot(video);
+
+        //スナップショット表示.
+        image.setAttribute("src", snap);
       });
     </script>
   </body>
