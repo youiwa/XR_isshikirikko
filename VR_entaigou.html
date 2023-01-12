@@ -30,7 +30,7 @@
       cursor-visible="true"
       cursor-scale="2"
       cursor-color="#0095DD"
-      cursor-opacity="0.5"
+      cursor-opacity="1.0"
       > </a-camera>
 
       <a-entity
@@ -43,9 +43,19 @@
       <!-- shadow="receive: true" -->
       <!-- animation="property: rotation; from: 0 0 0; to: 0 -360 0; dur: 20000; easing: linear; loop: true" -->
 
+      <a-plane
+        id="Ground"
+        position="0 0 0"
+        rotation="-90 0 0"
+        width="400"
+        height="400"
+        color="#deb887"
+      ></a-plane>
+
       <a-sky src="./model/bg-sky.jpg"></a-sky>
     </a-scene>
-    <div id="overlay">
+
+    <!-- <div id="overlay">
       <input
         id="button"
         type="button"
@@ -85,8 +95,8 @@
         "
         value="モデルを小さく"
       />
-    </div>
-    <script>
+    </div> -->
+    <!-- <script>
       var scene = document.querySelector("a-scene");
       var model = document.querySelector("#objmodel");
       const defaultSize = new THREE.Vector3(0.5, 0.5, 0.5);
@@ -121,6 +131,6 @@
         );
         //alert(scaleSize.x);
       });
-    </script>
+    </script> -->
   </body>
 </html>
