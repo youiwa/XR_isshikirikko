@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>VR_5号掩体壕（テストバージョン）</title>
+    <meta name="description" content="VR_5号掩体壕（テストバージョン）" />
+    <!-- A-Frame ライブラリの読み込み -->
+    <script src="./lib/aframe.min.js"></script>
+    <script src="./lib/aframe-extras.min.js"></script>
+    <!-- <script src="https://aframe.io/releases/1.2.0/a
+    frame.min.js"></script>
+    <script src="https://raw.githubusercontent.com/n5ro/aframe-extras/master/dist/aframe-extras.min.js"></script> -->
+  </head>
+  <body>
+    <!-- asset for model file -->
+    <a-assets>
+      <!-- OBJ形式のCGモデルの読み込み -->
+      <a-asset-item id="obj" src="./model/entaigou/entaigou5_20230110.obj"></a-asset-item>
+      <a-asset-item id="mtl" src="./model/entaigou/entaigou5_20230110.mtl"></a-asset-item>
+    </a-assets>
+
+    <a-scene>
+      <a-entity id="amb_light" light="type: ambient; color: #AAA"></a-entity>
+      <a-entity
+        id="flat_light"
+        light="type: directional; color: #FFF; intensity: 0.6; castShadow: true;"
+        position="5 5 5"
+      ></a-entity>
+      <a-camera position="0 1.5 4"
+      cursor-visible="true"
+      cursor-scale="2"
+      cursor-color="#0095DD"
+      cursor-opacity="1.0"
+      > </a-camera>
+
+      <a-entity
+        id="objmodel"
+        obj-model="obj: #obj; mtl: #mtl"
+        scale="1.5 1.5 1.5"
+        position="0 0 0"
+        rotation="0 0 0"
+      ></a-entity>
+      <!-- shadow="receive: true" -->
+      <!-- animation="property: rotation; from: 0 0 0; to: 0 -360 0; dur: 20000; easing: linear; loop: true" -->
+
+      <a-plane
+        id="Ground"
+        position="0 0 0"
+        rotation="-90 0 0"
+        width="400"
+        height="400"
+        color="#deb887"
+      ></a-plane>
+
+      <a-sky src="./model/bg-sky.jpg"></a-sky>
+    </a-scene>
+
+    <!-- <div id="overlay">
+      <input
+        id="button"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 20px;
+          left: 20px;
+          width: 100px;
+          height: 50px;
+          z-index: 100;
+        "
+        value="リセット"
+      />
+      <input
+        id="button_scale_up"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 75px;
+          left: 130px;
+          width: 110px;
+          height: 50px;
+          z-index: 100;
+        "
+        value="モデルを大きく"
+      />
+      <input
+        id="button_scale_down"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 20px;
+          left: 130px;
+          width: 110px;
+          height: 50px;
+          z-index: 100;
+        "
+        value="モデルを小さく"
+      />
+    </div> -->
+    <!-- <script>
+      var scene = document.querySelector("a-scene");
+      var model = document.querySelector("#objmodel");
+      const defaultSize = new THREE.Vector3(0.5, 0.5, 0.5);
+      const changeSize = new THREE.Vector3(0.1, 0.1, 0.1);
+      button.addEventListener("click", function () {
+        //大きさリセット
+        model.setAttribute("scale", defaultSize);
+      });
+
+      button_scale_up.addEventListener("click", function () {
+        //モデルの大きさ変更
+        var scaleSize = model.getAttribute("scale");
+        scaleSize.x = scaleSize.x + changeSize.x;
+        scaleSize.y = scaleSize.y + changeSize.y;
+        scaleSize.z = scaleSize.z + changeSize.z;
+        model.setAttribute(
+          "scale",
+          new THREE.Vector3(scaleSize.x, scaleSize.y, scaleSize.z)
+        );
+        //alert(scaleSize.x);
+      });
+
+      button_scale_down.addEventListener("click", function () {
+        //モデルの大きさ変更
+        var scaleSize = model.getAttribute("scale");
+        scaleSize.x = scaleSize.x - changeSize.x;
+        scaleSize.y = scaleSize.y - changeSize.y;
+        scaleSize.z = scaleSize.z - changeSize.z;
+        model.setAttribute(
+          "scale",
+          new THREE.Vector3(scaleSize.x, scaleSize.y, scaleSize.z)
+        );
+        //alert(scaleSize.x);
+      });
+    </script> -->
+  </body>
+</html>
