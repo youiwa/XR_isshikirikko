@@ -37,11 +37,10 @@ form {
   font-size: 100%;
 }
 ul {
-  list-style-type: none;
+  padding-left: 40px;
 }
 ol {
   padding-left: 40px;
-  padding-bottom: 15px;
 }
 img {
   border: none;
@@ -244,6 +243,9 @@ footer .pr {
 }
 .color1 {
   color: #d50f26;
+}
+.color2 {
+  color: #6666ff
 }
 .pr {
   font-size: 10px;
