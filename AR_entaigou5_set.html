@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>AR_掩体壕（設置バージョン）</title>
+    <meta name="description" content="AR_掩体壕（設置バージョン）" />
+    <script src="./lib/aframe.min.js"></script>
+    <!-- <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script> -->
+
+    <script>
+      AFRAME.registerComponent("ar-hit-test", {
+        init: function () {
+          // session start
+          this.el.sceneEl.renderer.xr.addEventListener(
+            "sessionstart",
+            async () => {
+              if (this.el.sceneEl.is("ar-mode")) {
+                this.renderer = this.el.sceneEl.renderer;
+                let session = this.renderer.xr.getSession();
+                let viewerSpace = await session.requestReferenceSpace("viewer");
+                this.xrHitTestSource = await session.requestHitTestSource({
+                  space: viewerSpace,
+                });
+              }
+            }
+          );
+
+          // session end
+          this.el.sceneEl.renderer.xr.addEventListener(
+            "sessionend",
+            async () => {
+              this.xrHitTestSource = null;
+            }
+          );
+        },
+        tick: function () {
+          const frame = this.el.sceneEl.frame;
+          if (!frame) return;
+
+          // hit-test in real world
+          const xrHitTestSource = this.xrHitTestSource;
+          if (xrHitTestSource) {
+            const refSpace = this.renderer.xr.getReferenceSpace();
+            const hitTestResults = frame.getHitTestResults(xrHitTestSource);
+            if (hitTestResults.length > 0) {
+              const pose = hitTestResults[0].getPose(refSpace);
+              this.el.setAttribute("position", pose.transform.position);
+              this.el.object3D.quaternion.copy(pose.transform.orientation);
+            }
+          }
+        },
+      });
+    </script>
+  </head>
+  <body>
+    <a-assets>
+      <!-- OBJ形式のCGモデルの読み込み -->
+      <a-asset-item id="obj1" src="./model/entaigou/entaigou5_20230110.obj"></a-asset-item>
+      <a-asset-item id="mtl1" src="./model/entaigou/entaigou5_20230110.mtl"></a-asset-item>
+      <a-asset-item id="obj2" src="./model/3133.obj"></a-asset-item>
+      <a-asset-item id="mtl2" src="./model/3133.mtl"></a-asset-item>
+    </a-assets>
+    <a-scene
+      webxr="optionalFeatures: hit-test, dom-overlay; overlayElement:#overlay;"
+    >
+      <a-entity light="type: point; color: #fff;" position="0 7 0"></a-entity>
+      <a-entity
+        id="light2"
+        light="type: point; color: #fff; intensity 0.5;"
+        position="0 0.3 0"
+        scale="0.5 0.5 0.5"
+      ></a-entity>
+      <a-entity
+        id="light3"
+        light="type: point; color: #fff; intensity 0.5;"
+        position="0 0.3 0.8"
+        scale="0.5 0.5 0.5"
+      ></a-entity>
+      <a-entity id="hitTestMarker" ar-hit-test>
+        <!-- <a-circle scale="0.1 0.1 0.1" rotation="-90 0 0"></a-circle> -->
+        <a-ring
+          material="opacity: 0.5"
+          color="red"
+          radius-inner="1.5"
+          radius-outer="2"
+          scale="0.1 0.1 0.1"
+          rotation="-90 0 0"
+        ></a-ring>
+      </a-entity>
+      <a-entity
+        id="objmodel1"
+        obj-model="obj: #obj1; mtl: #mtl1"
+        rotation="0 -90 0"
+        scale="0 0 0"
+      ></a-entity>
+
+      <a-entity
+        id="objmodel2"
+        obj-model="obj: #obj2; mtl: #mtl2"
+        rotation="0 -90 0"
+        scale="0 0 0"
+      ></a-entity>
+
+      <!-- scale="0.0005 0.0005 0.0005" -->
+    </a-scene>
+
+    <div id="overlay">
+
+    <!-- 1つ目のオブジェクト -->
+
+      <input
+        id="button"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 60px;
+          left: 20px;
+          width: 75px;
+          height: 35px;
+          z-index: 100;
+        "
+        value="①設置"
+      />
+      <input
+        id="button_scale_up"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 60px;
+          left: 115px;
+          width: 105px;
+          height: 35px;
+          z-index: 100;
+        "
+        value="①拡大"
+      />
+      <input
+        id="button_scale_down"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 60px;
+          left: 225px;
+          width: 105px;
+          height: 35px;
+          z-index: 100;
+        "
+        value="①縮小"
+      />
+
+      <!-- 1つ目のオブジェクト終わり -->
+      <!-- 2つ目のオブジェクト -->
+
+      <input
+        id="button2"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 20px;
+          left: 20px;
+          width: 75px;
+          height: 35px;
+          z-index: 100;
+        "
+        value="②設置"
+      />
+      <input
+        id="button_scale_up2"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 20px;
+          left: 115px;
+          width: 105px;
+          height: 35px;
+          z-index: 100;
+        "
+        value="②拡大"
+      />
+      <input
+        id="button_scale_down2"
+        type="button"
+        style="
+          position: absolute;
+          bottom: 20px;
+          left: 225px;
+          width: 105px;
+          height: 35px;
+          z-index: 100;
+        "
+        value="②縮小"
+      />
+
+      <!-- 2つ目のオブジェクト終わり -->
+
+    </div>
+
+    <script>
+      var scene = document.querySelector("a-scene");
+      var hitTest = document.querySelector("#hitTestMarker");
+      var button = document.querySelector("#button");
+      var model1 = document.querySelector("#objmodel1");
+      var model2 = document.querySelector("#objmodel2");
+      const defaultSize1 = new THREE.Vector3(0.05, 0.05, 0.05);
+      const changeSize1 = new THREE.Vector3(0.03, 0.03, 0.03);
+      const defaultSize2 = new THREE.Vector3(0.00005, 0.00005, 0.00005);
+      const changeSize2 = new THREE.Vector3(0.0003, 0.0003, 0.0003);
+
+      //<!-- ①②のモデル設置始まり -->
+
+      button.addEventListener("click", function () {
+        //モデルの位置変更
+        model1.setAttribute(
+          "position",
+          new THREE.Vector3(0, 0.05, 0.05).add(hitTest.object3D.position)
+        );
+        model1.setAttribute("rotation", hitTest.getAttribute("rotation"));
+
+        //大きさリセット
+        model1.setAttribute("scale", defaultSize1);
+        //model.setAttribute("rotation",
+        //  new THREE.Vector3(0, -90, 0).add(hitTest.object3D.rotation)
+        //);
+      });
+
+      button2.addEventListener("click", function () {
+        //モデルの位置変更
+        model2.setAttribute(
+          "position",
+          new THREE.Vector3(0, 0.05, 0.05).add(hitTest.object3D.position)
+        );
+        model2.setAttribute("rotation", hitTest.getAttribute("rotation"));
+
+        //大きさリセット
+        model2.setAttribute("scale", defaultSize2);
+        //model.setAttribute("rotation",
+        //  new THREE.Vector3(0, -90, 0).add(hitTest.object3D.rotation)
+        //);
+      });
+
+      //<!-- ①②のモデル設置終わり -->
+      //<!-- ①②のモデル大きくする始まり -->
+
+      button_scale_up.addEventListener("click", function () {
+        //モデルの大きさ変更
+        var scaleSize = model1.getAttribute("scale");
+        scaleSize.x = scaleSize.x + changeSize1.x;
+        scaleSize.y = scaleSize.y + changeSize1.y;
+        scaleSize.z = scaleSize.z + changeSize1.z;
+        model1.setAttribute(
+          "scale",
+          new THREE.Vector3(scaleSize.x, scaleSize.y, scaleSize.z)
+        );
+        //alert(scaleSize.x);
+      });
+
+      button_scale_up2.addEventListener("click", function () {
+        //モデルの大きさ変更
+        var scaleSize = model2.getAttribute("scale");
+        scaleSize.x = scaleSize.x + changeSize2.x;
+        scaleSize.y = scaleSize.y + changeSize2.y;
+        scaleSize.z = scaleSize.z + changeSize2.z;
+        model2.setAttribute(
+          "scale",
+          new THREE.Vector3(scaleSize.x, scaleSize.y, scaleSize.z)
+        );
+        //alert(scaleSize.x);
+      });
+
+      //<!-- ①②のモデル大きくする終わり -->
+      //<!-- ①②のモデル小さくする始まり -->
+
+      button_scale_down.addEventListener("click", function () {
+        //モデルの大きさ変更
+        var scaleSize = model1.getAttribute("scale");
+        scaleSize.x = scaleSize.x - changeSize1.x;
+        scaleSize.y = scaleSize.y - changeSize1.y;
+        scaleSize.z = scaleSize.z - changeSize1.z;
+        model1.setAttribute(
+          "scale",
+          new THREE.Vector3(scaleSize.x, scaleSize.y, scaleSize.z)
+        );
+        //alert(scaleSize.x);
+      });
+
+      button_scale_down2.addEventListener("click", function () {
+        //モデルの大きさ変更
+        var scaleSize = model2.getAttribute("scale");
+        scaleSize.x = scaleSize.x - changeSize2.x;
+        scaleSize.y = scaleSize.y - changeSize2.y;
+        scaleSize.z = scaleSize.z - changeSize2.z;
+        model2.setAttribute(
+          "scale",
+          new THREE.Vector3(scaleSize.x, scaleSize.y, scaleSize.z)
+        );
+        //alert(scaleSize.x);
+      });
+
+      //<!-- ①②のモデル小さくする終わり -->
+
+    </script>
+  </body>
+</html>
