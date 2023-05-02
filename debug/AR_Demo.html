@@ -1,0 +1,226 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <title>AR Demo</title>
+      <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+      <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+      <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <style>
+        /* メッセージの表示 */
+        body {
+          font-family: sans-serif;
+        }
+        * {
+          box-sizing: border-box;
+        }
+        body {
+          margin: 0;
+        }
+        #message {
+          position: fixed;
+          z-index: 10;
+          left: 5%;
+          bottom: 30px;
+          width: 90%;
+          padding: 5%;
+          color: #ffffff;
+          font-weight: bold;
+          background-color: rgba(0,0,0,.8);
+          border-radius: 20px;
+          border: 3px solid #ffffff;
+          display: none;
+        }
+
+        /* スナップショットボタンの表示 */
+        .ui {
+          position: absolute;
+          z-index: 100;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: auto;
+          margin: 0;
+          padding: 10px 15px 30px;
+          text-align: center;
+          box-sizing: border-box;
+        }
+
+        .ui a {
+          display: inline-block;
+          width: 60px;
+          height: 60px;
+          background-color: #ffffff;
+          line-height: 100%;
+          color: #303030;
+          margin: 10px 3px;
+          border-radius: 50%;
+          position: relative;
+        }
+          
+        .ui a i {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%,-50%);
+        }
+
+        .ui a:active {
+          color: #ff0000;
+        }
+
+        #snap {
+          max-width: 100%;
+          height: auto;
+          display: block;;
+          visibility: hidden;
+        }
+
+        .ui a.disabled {
+          pointer-events: none;
+          color: #cccccc;
+        }
+
+        #snap.visible {
+          visibility: visible;
+        }
+      </style>
+  </head>
+
+  <body style="margin: 0; overflow: hidden;">
+    <!-- オブジェクトが出現したらメッセージ表示 -->
+    <div id="message">○○があらわれた！</div>
+
+    <!-- 3Dモデルの読み込み -->
+    <a-assets>
+      <a-asset-item id="" src=""></a-asset-item>
+      <a-asset-item id="" src=""></a-asset-item>
+    </a-assets>
+
+    <a-scene
+      embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
+      vr-mode-ui="enabled: false;" renderer="logarithmicDepthBuffer: true;">
+
+      <!-- 画像認識によるオブジェクトの表示 -->
+      <a-nft type="nft" url="" smooth="true" smoothCount="10" smoothTolerance=".01" smoothThreshold="5">
+        <a-entity></a-entity>
+      </a-nft>
+
+
+      <!-- 位置情報によるオブジェクトの表示 -->
+      <a-entity id="" obj-model="" rotation="" scale="" gps-entity-place="latitude: ; longitude: ;"></a-entity>
+
+      <a-light id="directionLight" type="directional" color="#ffffff" intensity="0" position="-1 1 2"></a-light>
+      <a-light id="ambientLight" type="ambient" intensity="0" color="#ffffff"></a-light>
+      <a-camera gps-camera rotation-reader></a-camera>
+    </a-scene>
+
+    <!-- スナップショットボタンの表示 -->
+    <div class="ui">
+      <img id="snap">
+      <a href="#" id="delete-photo" title="Delete Photo" class="disabled"><i class="material-icons">delete</i></a>
+      <a href="" id="take-photo" title="Take Photo"><i class="material-icons">photo_camera</i></a>
+      <a href="#" id="download-photo" download="selfie.png" title="Save Photo" class="disabled" target="_blank"><i class="material-icons">file_download</i></a>
+    </div>
+
+    <script>
+      // オブジェクトとの距離(位置情報)
+      window.addEventListener('load', function () {
+        const el = document.querySelector('[gps-entity-place]');
+        const message = document.getElementById('message');
+        const directionLight = document.getElementById('directionLight');
+        const ambientLight = document.getElementById('ambientLight');
+        el.addEventListener('gps-entity-place-update-positon', (event) => {
+          if(event.detail.distance < 30) {
+            // 30m未満で明るくする, メッセージ表示
+            directionLight.setAttribute('intensity', 1);
+            ambientLight.setAttribute('intensity', 1);
+            message.style.display = 'block';
+          } else if(event.detail.distance < 50) {
+            // 50m未満で近づくほど明るくする
+            directionLight.setAttribute('intensity', 1 - event.detail.distance / 50);
+            ambientLight.setAttribute('intensity', 1 - event.detail.distance / 50);
+            message.style.display = 'none';
+          } else {
+            // 50m以上離れると非表示
+            directionLight.setAttribute('intensity', 0);
+            ambientLight.setAttribute('intensity', 0);
+            message.style.display = 'none';
+          }
+        });
+      });
+    </script>
+  </body>
+
+  <script>
+    var image = document.querySelector('#snap');
+    var take_photo_btn = document.querySelector('#take-photo');
+    var delete_photo_btn = document.querySelector('#delete-photo');
+    var download_photo_btn = document.querySelector('#download-photo');
+    
+    // スナップショットボタン
+    take_photo_btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      var video = document.querySelector('video');
+      var snap = takeSnapshot(video);
+    
+      // スナップショット表示.
+      image.setAttribute('src', snap);
+      image.classList.add('visible');
+    
+      // 削除ボタンと保存ボタン有効
+      delete_photo_btn.classList.remove("disabled");
+      download_photo_btn.classList.remove("disabled");
+    
+      // 保存ボタンにスナップショットを渡す
+      download_photo_btn.href = snap;
+    });
+    
+    // 削除ボタン
+    delete_photo_btn.addEventListener("click", function(e){
+    
+      e.preventDefault();
+    
+      // スナップショットを隠す
+      image.setAttribute('src', "");
+      image.classList.remove("visible");
+    
+      // 削除ボタンと保存ボタン無効
+      delete_photo_btn.classList.add("disabled");
+      download_photo_btn.classList.add("disabled");
+    
+    });
+    
+    // スナップショットを撮る
+    function takeSnapshot(video) {
+      var resizedCanvas = document.createElement("canvas");
+      var resizedContext = resizedCanvas.getContext("2d");
+      var width = video.videoWidth;
+      var height = video.videoHeight;
+      var aScene = document.querySelector("a-scene").components.screenshot.getCanvas("perspective");
+    
+      if (width && height) {
+        // videoのサイズをキャンバスにセット
+        resizedCanvas.width = width;
+        resizedCanvas.height = height;
+
+        // キャンバスにvideoをコピー
+        resizedContext.drawImage(video, 0, 0, width, height);
+    
+        // カメラの画角でAR側の縮小処理を変える
+        if (width > height) {
+          // 横長 (PC)
+          resizedContext.drawImage(aScene, 0, 0, width, height);
+        } else {
+          // 縦長 (スマホ)
+          var scale = height / width;
+          var scaledWidth = height * scale;
+          var marginLeft = (width - scaledWidth) / 2;
+          resizedContext.drawImage(aScene, marginLeft, 0, scaledWidth, height);
+        }
+        return resizedCanvas.toDataURL('image/png');
+      }
+    }
+  </script>
+</html>

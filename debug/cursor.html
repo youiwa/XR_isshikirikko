@@ -1,0 +1,168 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Cursor Test</title>
+    <script src = "https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src = "https://unpkg.com/aframe-event-set-component@^4.0.0/dist/aframe-event-set-component.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <style>
+        /* スナップショットボタンの表示 */
+        .ui {
+          position: absolute;
+          z-index: 100;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: auto;
+          margin: 0;
+          padding: 10px 15px 30px;
+          text-align: center;
+          box-sizing: border-box;
+        }
+
+        .ui a {
+          display: inline-block;
+          width: 60px;
+          height: 60px;
+          background-color: #ffffff;
+          line-height: 100%;
+          color: #303030;
+          margin: 10px 3px;
+          border-radius: 50%;
+          position: relative;
+        }
+          
+        .ui a i {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%,-50%);
+        }
+
+        .ui a:active {
+          color: #ff0000;
+        }
+
+        #snap {
+          max-width: 100%;
+          height: auto;
+          display: block;;
+          visibility: hidden;
+        }
+
+        .ui a.disabled {
+          pointer-events: none;
+          color: #cccccc;
+        }
+
+        #snap.visible {
+          visibility: visible;
+        }
+      </style>
+  </head>
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false;">
+      <a-text id="map" value="MAP" align="center" position="-4 0 -4" color="white" geometry="primitive:plane; width: 2" material="color: #4169E1"
+        event-set__enter="_event: mouseenter; material.color: #FFFF00;"
+        event-set__leave="_event: mouseleave; material.color: #4169E1"></a-text>
+      <a-text id="event" value="EVENT" align="center" position="-1.5 0 -4" color="white" geometry="primitive:plane; width: 2" material="color: #EF2D5E"
+        event-set__enter="_event: mouseenter; material.color: #FFFF00;"
+        event-set__leave="_event: mouseleave; material.color: #EF2D5E"></a-text>
+      <a-text id="game" value="GAME" align="center" position="1.5 0 -4" color="white" geometry="primitive:plane; width: 2" material="color: #00FF00"
+        event-set__enter="_event: mouseenter; material.color: #FFFF00;"
+        event-set__leave="_event: mouseleave; material.color: #00FF00"></a-text>
+      <a-text id="object" value="OBJECT" align="center" position="4 0 -4" color="white" geometry="primitive:plane; width: 2" material="color: #4B0082"
+        event-set__enter="_event: mouseenter; material.color: #FFFF00;"
+        event-set__leave="_event: mouseleave; material.color: #4B0082"></a-text>
+      <a-entity camera look-controls wasd-controls>
+        <a-entity cursor="fuse: true;"
+          position="0 0 -3"
+          geometry="primitive: ring; radiusInner: 0.1; radiusOuter: 0.15;"
+          material="color: #acacac; shader: flat; opacity: 0.6">
+          <a-animation begin="click" easing="ease-in" attribute="scale" dur="150"
+               fill="forwards" from="0.1 0.1 0.1" to="1 1 1"></a-animation>
+          <a-animation begin="cursor-fusing" easing="ease-in" attribute="scale" dur="1500"
+               fill="backwards" from="1 1 1" to="0.1 0.1 0.1"></a-animation>
+        </a-entity>
+      </a-entity>
+    </a-scene>
+    <!-- スナップショットボタンの表示 -->
+    <div class="ui">
+      <img id="snap">
+      <a href="#" id="delete-photo" title="Delete Photo" class="disabled"><i class="material-icons">delete</i></a>
+      <a href="" id="take-photo" title="Take Photo"><i class="material-icons">photo_camera</i></a>
+      <a href="#" id="download-photo" download="selfie.png" title="Save Photo" class="disabled" target="_blank"><i class="material-icons">file_download</i></a>
+    </div>
+  </body>
+  <script>
+    var image = document.querySelector('#snap');
+    var take_photo_btn = document.querySelector('#take-photo');
+    var delete_photo_btn = document.querySelector('#delete-photo');
+    var download_photo_btn = document.querySelector('#download-photo');
+    
+    // スナップショットボタン
+    take_photo_btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      var video = document.querySelector('video');
+      var snap = takeSnapshot(video);
+    
+      // スナップショット表示.
+      image.setAttribute('src', snap);
+      image.classList.add('visible');
+    
+      // 削除ボタンと保存ボタン有効
+      delete_photo_btn.classList.remove("disabled");
+      download_photo_btn.classList.remove("disabled");
+    
+      // 保存ボタンにスナップショットを渡す
+      download_photo_btn.href = snap;
+    });
+    
+    // 削除ボタン
+    delete_photo_btn.addEventListener("click", function(e){
+    
+      e.preventDefault();
+    
+      // スナップショットを隠す
+      image.setAttribute('src', "");
+      image.classList.remove("visible");
+    
+      // 削除ボタンと保存ボタン無効
+      delete_photo_btn.classList.add("disabled");
+      download_photo_btn.classList.add("disabled");
+    
+    });
+    
+    // スナップショットを撮る
+    function takeSnapshot(video) {
+      var resizedCanvas = document.createElement("canvas");
+      var resizedContext = resizedCanvas.getContext("2d");
+      var width = video.videoWidth;
+      var height = video.videoHeight;
+      var aScene = document.querySelector("a-scene").components.screenshot.getCanvas("perspective");
+    
+      if (width && height) {
+        // videoのサイズをキャンバスにセット
+        resizedCanvas.width = width;
+        resizedCanvas.height = height;
+
+        // キャンバスにvideoをコピー
+        resizedContext.drawImage(video, 0, 0, width, height);
+    
+        // カメラの画角でAR側の縮小処理を変える
+        if (width > height) {
+          // 横長 (PC)
+          resizedContext.drawImage(aScene, 0, 0, width, height);
+        } else {
+          // 縦長 (スマホ)
+          var scale = height / width;
+          var scaledWidth = height * scale;
+          var marginLeft = (width - scaledWidth) / 2;
+          resizedContext.drawImage(aScene, marginLeft, 0, scaledWidth, height);
+        }
+        return resizedCanvas.toDataURL('image/png');
+      }
+    }
+  </script>
+</html>
