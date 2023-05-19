@@ -12,11 +12,6 @@
   </head>
 
   <body style="margin: 0; overflow: hidden;">
-    <a-assets>
-      <!-- OBJ形式のCGモデルの読み込み -->
-      <a-asset-item id="obj2" src="./model/3133.obj"></a-asset-item>
-      <a-asset-item id="mtl2" src="./model/3133.mtl"></a-asset-item>
-    </a-assets>
     <a-scene
       vr-mode-ui="enabled: false"
       embedded
@@ -33,14 +28,12 @@
       gps-entity-place="latitude: 33.548532426926926; longitude: 133.68096447994952;"
       scale="5 5 5"
     ></a-box> -->
-    <a-entity
-    id="objmodel2"
-    obj-model="obj: #obj2; mtl: #mtl2"
-    rotation="0 -90 0"
-    scale="0.2 0.2 0.2"
-    gps-entity-place="latitude: 33.548532426926926; longitude: 133.68096447994952;"
-    ></a-entity>
-      <a-camera gps-camera="gpsMinDistance:10; minDistance:60; maxDistance:200;" rotation-reader> </a-camera>
+    <a-box
+      material="color: red"
+      gps-entity-place="latitude: 33.54882377482259; longitude: 133.68022732268577;" 
+      scale="5 5 5"
+    ></a-box>
+    <a-camera gps-camera="gpsMinDistance:10; minDistance:60; maxDistance:200;" rotation-reader> </a-camera>
     </a-scene>
   </body>
 </html>
