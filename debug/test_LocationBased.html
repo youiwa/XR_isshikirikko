@@ -1,36 +1,254 @@
-<!-- https://bagelee.com/programming/location-based-ar/ -->
-<!-- https://blog.kimizuka.org/entry/2020/12/24/174534 -->
-
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Location-based AR.js demo</title>
-    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <title>Location Based AR Test</title>
+    <!-- <script src="./lib/aframe.min.js"></script> -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <script src="https://unpkg.com/aframe-extras/dist/aframe-extras.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      #distance {
+        position: fixed;
+        z-index: 10000;
+        background-color: rgba(0,0,0,.8);
+        color: #fff;
+        text-align: center;
+        padding: 10px;
+        top: 10px;
+        left: 5%;
+        width: 90%;
+        display: block;
+      }
+      body {
+        margin: 0;
+      }
+      #message {
+        position: fixed;
+        z-index: 10;
+        left: 5%;
+        top: 10px;
+        width: 90%;
+        padding: 5%;
+        color: #fff;
+        font-weight: bold;
+        background-color: rgba(0,0,0,.8);
+        border-radius: 20px;
+        border: 3px solid #fff;
+        display: none;
+      }
+
+      /* スナップショットボタンの表示 */
+      .ui {
+        position: absolute;
+        z-index: 100;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 10px 15px 30px;
+        text-align: center;
+        box-sizing: border-box;
+      }
+
+      .ui a {
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+        background-color: #ffffff;
+        line-height: 100%;
+        color: #303030;
+        margin: 10px 3px;
+        border-radius: 50%;
+        position: relative;
+      }
+        
+      .ui a i {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+      }
+
+      .ui a:active {
+        color: #ff0000;
+      }
+
+      #snap {
+        max-width: 100%;
+        height: auto;
+        display: block;;
+        visibility: hidden;
+      }
+
+      .ui a.disabled {
+        pointer-events: none;
+        color: #cccccc;
+      }
+
+      #snap.visible {
+        visibility: visible;
+      }
+    </style>
   </head>
 
   <body style="margin: 0; overflow: hidden;">
+    <div id="distance">Loading...</div>
+    <div id="message">
+      AR掩体壕(えんたいごう)
+    </div>
+    
     <a-scene
       vr-mode-ui="enabled: false"
       embedded
-      arjs="sourceType: webcam; debugUIEnabled: false;"
+      arjs="debugUIEnabled: false;"
     >
-      <!-- <a-text
-        value="This content will always face you."
+      <!-- 3Dモデルの読み込み -->
+      <a-assets>
+        <a-asset-item id="obj" src="./model/3133.obj"></a-asset-item>
+        <a-asset-item id="mtl" src="./model/3133.mtl"></a-asset-item>
+      </a-assets>
+      <a-entity
+        gps-entity-place="latitude: 33.54881724530957; longitude: 133.68035668183893; elevation: 0;"
+        obj-model="obj: #obj; mtl: #mtl"
+        scale="0.0005 0.0005 0.0005"
+        rotation="0 0 0"
         look-at="[gps-camera]"
-        scale="50 50 50"
-        gps-entity-place="latitude: 33.548532426926926; longitude: 133.68096447994952;"
-      ></a-text> -->
-    <a-box
-      material="color: red"
-      gps-entity-place="latitude: 33.54882377482259; longitude: 133.68022732268577;" 
-      scale="5 5 5"
-    ></a-box>
-    <a-camera gps-camera rotation-reader> </a-camera>
+        animation-mixer
+      ></a-entity>
+      <a-light
+        id="directionLight"
+        type="directional"
+        color="#FFF"
+        intensity="0"
+        position="-1 1 2">
+      </a-light>
+      <a-light
+        id="ambientLight"
+        type="ambient"
+        intensity="0"
+        color="#FFF">
+      </a-light>
+      <a-camera gps-camera="minDistance:5; maxDistance:20" rotation-reader> </a-camera>
     </a-scene>
+
+    <div class="ui">
+        <img id="snap">
+        <a href="#" id="delete-photo" title="Delete Photo" class="disabled"><i class="material-icons">delete</i></a>
+        <a href="" id="take-photo" title="Take Photo"><i class="material-icons">photo_camera</i></a>
+        <a href="#" id="download-photo" download="selfie.png" title="Save Photo" class="disabled" target="_blank"><i class="material-icons">file_download</i></a>
+    </div>
+
+    <script>
+      window.addEventListener('load', function () {
+        const el = document.querySelector('[gps-entity-place]');
+        const distanceMsg = document.getElementById('distance');
+        const message = document.getElementById('message');
+        const directionLight = document.getElementById('directionLight');
+        const ambientLight = document.getElementById('ambientLight');
+        el.addEventListener('gps-entity-place-update-position', (event) => {
+          distanceMsg.textContent = `あと${event.detail.distance}m`;
+          if(event.detail.distance <= 10) {
+            // 10m以下で明るくする、メッセージ表示、距離非表示
+            directionLight.setAttribute('intensity', 1);
+            ambientLight.setAttribute('intensity', 1);
+            distanceMsg.style.display = 'none';
+            message.style.display = 'block';
+          } else if(event.detail.distance <= 20) {
+            // 20m以下で近づくほど明るくする、メッセージ非表示、距離表示
+            directionLight.setAttribute('intensity', 1 - event.detail.distance / 20);
+            ambientLight.setAttribute('intensity', 1 - event.detail.distance / 20);
+            distanceMsg.style.display = 'block';
+            message.style.display = 'none';
+          } else {
+            // 20mより離れると、明るさ0、メッセージ非表示、距離表示
+            directionLight.setAttribute('intensity', 0);
+            ambientLight.setAttribute('intensity', 0);
+            distanceMsg.style.display = 'block';
+            message.style.display = 'none';
+          }
+        });
+      });
+
+      var image = document.querySelector('#snap');
+      var take_photo_btn = document.querySelector('#take-photo');
+      var delete_photo_btn = document.querySelector('#delete-photo');
+      var download_photo_btn = document.querySelector('#download-photo');
+    
+      // スナップショットボタン
+      take_photo_btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        var video = document.querySelector('video');
+        var snap = takeSnapshot(video);
+    
+        // スナップショット表示.
+        image.setAttribute('src', snap);
+        image.classList.add('visible');
+    
+        // 削除ボタンと保存ボタン有効
+        delete_photo_btn.classList.remove("disabled");
+        download_photo_btn.classList.remove("disabled");
+    
+        // 保存ボタンにスナップショットを渡す
+        download_photo_btn.href = snap;
+      });
+    
+      // 削除ボタン
+      delete_photo_btn.addEventListener("click", function(e){
+    
+        e.preventDefault();
+    
+        // スナップショットを隠す
+        image.setAttribute('src', "");
+        image.classList.remove("visible");
+    
+        // 削除ボタンと保存ボタン無効
+        delete_photo_btn.classList.add("disabled");
+        download_photo_btn.classList.add("disabled");
+    
+      });
+    
+      // スナップショットを撮る
+      function takeSnapshot(video) {
+        var resizedCanvas = document.createElement("canvas");
+        var resizedContext = resizedCanvas.getContext("2d");
+        var width = video.videoWidth;
+        var height = video.videoHeight;
+        var aScene = document.querySelector("a-scene").components.screenshot.getCanvas("perspective");
+    
+        if (width && height) {
+          // videoのサイズをキャンバスにセット
+          resizedCanvas.width = width;
+          resizedCanvas.height = height;
+
+          // キャンバスにvideoをコピー
+          resizedContext.drawImage(video, 0, 0, width, height);
+    
+          // カメラの画角でAR側の縮小処理を変える
+          if (width > height) {
+            // 横長 (PC)
+            resizedContext.drawImage(aScene, 0, 0, width, height);
+          } else {
+            // 縦長 (スマホ)
+            var scale = height / width;
+            var scaledWidth = height * scale;
+            var marginLeft = (width - scaledWidth) / 2;
+            resizedContext.drawImage(aScene, marginLeft, 0, scaledWidth, height);
+          }
+          return resizedCanvas.toDataURL('image/png');
+        }
+      }
+    </script>
   </body>
 </html>
-
-, 
