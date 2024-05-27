@@ -1,60 +1,43 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>VR_4号掩体壕（テストバージョン）</title>
-    <meta name="description" content="VR_4号掩体壕（テストバージョン）" />
-    <!-- A-Frame ライブラリの読み込み -->
-    <!-- <script src="./lib/aframe.min.js"></script>
+
+<head>
+  <meta charset="utf-8" />
+  <title>VR_4号掩体壕（テストバージョン）</title>
+  <meta name="description" content="VR_4号掩体壕（テストバージョン）" />
+  <!-- A-Frame ライブラリの読み込み -->
+  <!-- <script src="./lib/aframe.min.js"></script>
     <script src="./lib/aframe-extras.min.js"></script> -->
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@tagOrCommit/dist/aframe-extras.min.js"></script>
-  </head>
-  <body>
-    <!-- asset for model file -->
-    <a-assets>
-      <!-- OBJ形式のCGモデルの読み込み -->
-      <a-asset-item id="obj" src="./model/entaigou/entaigou4_20230110.obj"></a-asset-item>
-      <a-asset-item id="mtl" src="./model/entaigou/entaigou4_20230110.mtl"></a-asset-item>
-    </a-assets>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@tagOrCommit/dist/aframe-extras.min.js"></script>
+</head>
 
-    <a-scene>
-      <a-entity id="amb_light" light="type: ambient; color: #AAA"></a-entity>
-      <a-entity
-        id="flat_light"
-        light="type: directional; color: #FFF; intensity: 0.6; castShadow: true;"
-        position="5 5 5"
-      ></a-entity>
-      <a-camera position="0 1.5 4"
-      cursor-visible="true"
-      cursor-scale="2"
-      cursor-color="#0095DD"
-      cursor-opacity="1.0"
-      > </a-camera>
+<body>
+  <!-- asset for model file -->
+  <a-assets>
+    <!-- OBJ形式のCGモデルの読み込み -->
+    <a-asset-item id="obj" src="./model/entaigou/entaigou4_20230110.obj"></a-asset-item>
+    <a-asset-item id="mtl" src="./model/entaigou/entaigou4_20230110.mtl"></a-asset-item>
+  </a-assets>
 
-      <a-entity
-        id="objmodel"
-        obj-model="obj: #obj; mtl: #mtl"
-        scale="1.5 1.5 1.5"
-        position="0 0 0"
-        rotation="0 0 0"
-      ></a-entity>
-      <!-- shadow="receive: true" -->
-      <!-- animation="property: rotation; from: 0 0 0; to: 0 -360 0; dur: 20000; easing: linear; loop: true" -->
+  <a-scene>
+    <a-entity id="amb_light" light="type: ambient; color: #AAA"></a-entity>
+    <a-entity id="flat_light" light="type: directional; color: #FFF; intensity: 0.6; castShadow: true;"
+      position="5 5 5"></a-entity>
+    <a-camera position="0 1.5 4" cursor-visible="true" cursor-scale="2" cursor-color="#0095DD" cursor-opacity="1.0">
+    </a-camera>
 
-      <a-plane
-        id="Ground"
-        position="0 0 0"
-        rotation="-90 0 0"
-        width="400"
-        height="400"
-        color="#deb887"
-      ></a-plane>
+    <a-entity id="objmodel" obj-model="obj: #obj; mtl: #mtl" scale="1.5 1.5 1.5" position="0 0 0"
+      rotation="0 0 0"></a-entity>
+    <!-- shadow="receive: true" -->
+    <!-- animation="property: rotation; from: 0 0 0; to: 0 -360 0; dur: 20000; easing: linear; loop: true" -->
 
-      <a-sky src="./model/bg-sky.jpg"></a-sky>
-    </a-scene>
+    <a-plane id="Ground" position="0 0 0" rotation="-90 0 0" width="400" height="400" color="#deb887"></a-plane>
 
-    <!-- <div id="overlay">
+    <a-sky src="./model/bg-sky.jpg"></a-sky>
+  </a-scene>
+
+  <!-- <div id="overlay">
       <input
         id="button"
         type="button"
@@ -95,7 +78,7 @@
         value="モデルを小さく"
       />
     </div> -->
-    <!-- <script>
+  <!-- <script>
       var scene = document.querySelector("a-scene");
       var model = document.querySelector("#objmodel");
       const defaultSize = new THREE.Vector3(0.5, 0.5, 0.5);
@@ -131,5 +114,6 @@
         //alert(scaleSize.x);
       });
     </script> -->
-  </body>
+</body>
+
 </html>
